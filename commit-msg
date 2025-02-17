@@ -1,0 +1,32 @@
+#!/bin/bash
+#
+# Used to force commit messages the 
+# starts with branch name prefix 
+# related with Jira ticket
+#
+# It will avoid to generate commit
+# messages out of pattern showing a
+# an error message with branch name,
+# expected previx and what was 
+# the prefix found
+
+# commit message from commit message file 
+commit_message=$(cat "$1")
+
+# Catch the branch name
+branch_name=$(git rev-parse --abbrev-ref HEAD)
+
+# extract just the pattern(XXXXXX-99999) that we need to put into our messages
+branch_prefix=$(echo "$branch_name" | grep -oP '[A-Z]+-\d+')
+
+# check if the commit message has $branch_prefix at the begining
+if ! grep -qE "^$branch_prefix\s" <<< "$commit_message"; then
+	echo "Branch name: $branch_name";
+	echo '-- commit message prefix --'
+	echo "Expected: $branch_prefix";
+  echo "Found: $(echo "$commit_message" | grep -oP '^.*\s')"
+
+  exit 1
+fi
+
+exit 0
